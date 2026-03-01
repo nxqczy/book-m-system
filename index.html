@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图书管理系统 - Web 版</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>图书管理系统</h1>
+        
+        <!-- 搜索区域 -->
+        <div class="search-section">
+            <div class="search-row">
+                <input type="text" id="search-input" placeholder="输入搜索内容">
+                <select id="field-select">
+                    <option value="全部字段">全部字段</option>
+                    <option value="书名">书名</option>
+                    <option value="作者">作者</option>
+                    <option value="ISBN">ISBN</option>
+                    <option value="内容简介">内容简介</option>
+                    <option value="过程域">过程域</option>
+                    <option value="过程组">过程组</option>
+                    <option value="成熟度等级">成熟度等级</option>
+                    <option value="材料性质">材料性质</option>
+                </select>
+                <button id="search-btn">查询</button>
+                <button id="sync-btn">同步</button>
+            </div>
+        </div>
+        
+        <!-- 图书列表 -->
+        <div class="book-list" id="book-list">
+            <!-- 图书卡片将通过 JavaScript 动态生成 -->
+        </div>
+        
+        <!-- 新增按钮 -->
+        <button id="add-btn" class="add-btn">+ 新增图书</button>
+        
+        <!-- 编辑模态框 -->
+        <div id="edit-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modal-title">新增图书</h2>
+                <form id="book-form">
+                    <input type="hidden" id="book-uuid">
+                    <div class="form-group">
+                        <label for="title">书名 *</label>
+                        <input type="text" id="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="author">作者 *</label>
+                        <input type="text" id="author" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="isbn">ISBN</label>
+                        <input type="text" id="isbn">
+                    </div>
+                    <div class="form-group">
+                        <label for="summary">内容简介</label>
+                        <textarea id="summary" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="process-domain">过程域</label>
+                        <input type="text" id="process-domain">
+                    </div>
+                    <div class="form-group">
+                        <label for="process-group">过程组</label>
+                        <input type="text" id="process-group">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="maturity-level">成熟度等级</label>
+                            <input type="number" id="maturity-level" min="1" max="5">
+                        </div>
+                        <div class="form-group half">
+                            <label for="material-property">材料性质</label>
+                            <input type="text" id="material-property">
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">保存</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 确认删除模态框 -->
+        <div id="delete-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>确认删除</h2>
+                <p>确定要删除这本书吗？</p>
+                <div class="modal-buttons">
+                    <button id="cancel-delete">取消</button>
+                    <button id="confirm-delete">删除</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 加载指示器 -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
