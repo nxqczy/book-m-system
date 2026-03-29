@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流程体系建设管理系统 - 网页查询</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1890ff;
+        }
+        
+        .search-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+        
+        label {
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, button {
+            padding: 8px 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            height: 36px;
+            align-self: flex-end;
+        }
+        
+        button:hover {
+            background-color: #40a9ff;
+        }
+        
+        .results-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .results-title {
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .data-table th {
+            background-color: #fafafa;
+            font-weight: 600;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .module-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .module-tab {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .module-tab.active {
+            background-color: #1890ff;
+            color: white;
+        }
+        
+        /* 浏览模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 800px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        /* 表格行悬停效果 */
+        .data-table tr {
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>流程体系建设管理系统 - 网页查询</h1>
+        
+        <div class="module-tabs">
+            <button class="module-tab active" data-module="process_architecture">流程架构设计</button>
+            <button class="module-tab" data-module="process_construction">流程构建</button>
+            <button class="module-tab" data-module="four_level_question">四级问题库</button>
+        </div>
+        
+        <div class="search-container">
+            <form class="search-form" id="search-form">
+                <div class="form-group">
+                    <label for="search-term">关键词</label>
+                    <input type="text" id="search-term" placeholder="请输入关键词">
+                </div>
+                <div class="form-group">
+                    <label for="search-field">搜索字段</label>
+                    <select id="search-field">
+                        <option value="全部字段">全部字段</option>
+                        <option value="序号">序号</option>
+                        <option value="架构设计示例">架构设计示例</option>
+                        <option value="示例特征">示例特征</option>
+                        <option value="架构优势">架构优势</option>
+                    </select>
+                </div>
+                <button type="submit">查询</button>
+                <button type="button" id="reset-button">重置</button>
+            </form>
+        </div>
+        
+        <div class="results-container">
+            <div class="results-title">查询结果</div>
+            <div id="results-content">
+                <table class="data-table" id="results-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>序号</th>
+                            <th>架构设计示例</th>
+                            <th>示例特征</th>
+                            <th>架构优势</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="no-results">
+                            <td colspan="5">请输入关键词进行查询</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 浏览模态框 -->
+    <div id="view-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeViewModal()">&times;</span>
+            <h2 id="view-modal-title">浏览详情</h2>
+            <div id="view-content"></div>
+        </div>
+    </div>
+    
+    <script>
+        // 模块配置
+        const modules = {
+            process_architecture: {
+                fields: ["ID", "序号", "架构设计示例", "示例特征", "架构优势", "优势类型", "存在问题", "问题类型", "启示", "创建时间", "更新时间"],
+                searchFields: ["全部字段", "序号", "架构设计示例", "示例特征", "架构优势", "优势类型", "存在问题", "问题类型", "启示"],
+                fieldMapping: {
+                    "序号": "serial_num",
+                    "架构设计示例": "arch_design_example",
+                    "示例特征": "example_character",
+                    "架构优势": "arch_advantages",
+                    "优势类型": "advantage_type",
+                    "存在问题": "exist_problem",
+                    "问题类型": "problem_type",
+                    "启示": "enlightenment"
+                }
+            },
+            process_construction: {
+                fields: ["ID", "序号", "流程常见问题", "问题详情", "理想模型示例", "创建时间", "更新时间"],
+                searchFields: ["全部字段", "序号", "流程常见问题", "问题详情", "理想模型示例"],
+                fieldMapping: {
+                    "序号": "serial_num",
+                    "流程常见问题": "process_common_problem",
+                    "问题详情": "problem_detail",
+                    "理想模型示例": "ideal_model_example"
+                }
+            },
+            four_level_question: {
+                fields: ["ID", "问题类别", "常见问题", "问题描述", "具体表现", "措施示例", "创建时间", "更新时间"],
+                searchFields: ["全部字段", "问题类别", "常见问题", "问题描述", "具体表现", "措施示例"],
+                fieldMapping: {
+                    "问题类别": "question_category",
+                    "常见问题": "common_question",
+                    "问题描述": "problem_description",
+                    "具体表现": "specific_performance",
+                    "措施示例": "measure_example"
+                }
+            }
+        };
+        
+        // 当前选中的模块
+        let currentModule = "process_architecture";
+        
+        // 初始化
+        function init() {
+            // 绑定模块切换事件
+            document.querySelectorAll(".module-tab").forEach(tab => {
+                tab.addEventListener("click", function() {
+                    // 更新活跃状态
+                    document.querySelectorAll(".module-tab").forEach(t => t.classList.remove("active"));
+                    this.classList.add("active");
+                    
+                    // 更新当前模块
+                    currentModule = this.dataset.module;
+                    
+                    // 更新搜索字段选项
+                    updateSearchFields();
+                    
+                    // 更新表格表头
+                    updateTableHeader();
+                    
+                    // 重置查询
+                    resetSearch();
+                });
+            });
+            
+            // 绑定表单提交事件
+            document.getElementById("search-form").addEventListener("submit", function(e) {
+                e.preventDefault();
+                searchData();
+            });
+            
+            // 绑定重置按钮事件
+            document.getElementById("reset-button").addEventListener("click", resetSearch);
+            
+            // 初始化搜索字段选项
+            updateSearchFields();
+        }
+        
+        // 更新搜索字段选项
+        function updateSearchFields() {
+            const searchField = document.getElementById("search-field");
+            const module = modules[currentModule];
+            
+            // 清空选项
+            searchField.innerHTML = "";
+            
+            // 添加选项
+            module.searchFields.forEach(field => {
+                const option = document.createElement("option");
+                option.value = field;
+                option.textContent = field;
+                searchField.appendChild(option);
+            });
+        }
+        
+        // 更新表格表头
+        function updateTableHeader() {
+            const table = document.getElementById("results-table");
+            const thead = table.querySelector("thead");
+            const module = modules[currentModule];
+            
+            // 清空表头
+            thead.innerHTML = "";
+            
+            // 创建表头行
+            const headerRow = document.createElement("tr");
+            module.fields.forEach(field => {
+                const th = document.createElement("th");
+                th.textContent = field;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+        }
+        
+        // 重置搜索
+        function resetSearch() {
+            document.getElementById("search-term").value = "";
+            document.getElementById("search-field").selectedIndex = 0;
+            
+            const tbody = document.querySelector("#results-table tbody");
+            tbody.innerHTML = `
+                <tr class="no-results">
+                    <td colspan="${modules[currentModule].fields.length}">请输入关键词进行查询</td>
+                </tr>
+            `;
+        }
+        
+        // Supabase配置
+        const supabaseUrl = 'https://iwpnajbmceobbkvwqtmy.supabase.co';
+        const supabaseKey = 'sb_publishable_-FWZBtjD8_JcgoaupQSq0w_2KCvd-FT';
+        
+        // 搜索数据
+        async function searchData() {
+            const searchTerm = document.getElementById("search-term").value.trim();
+            const searchField = document.getElementById("search-field").value;
+            
+            // 从Supabase获取数据
+            try {
+                const data = await fetchDataFromSupabase(searchTerm, searchField);
+                // 显示结果
+                displayResults(data);
+            } catch (error) {
+                console.error('获取数据失败:', error);
+                const tbody = document.querySelector("#results-table tbody");
+                tbody.innerHTML = `
+                    <tr class="no-results">
+                        <td colspan="${modules[currentModule].fields.length}">获取数据失败，请稍后重试</td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // 从Supabase获取数据
+        async function fetchDataFromSupabase(searchTerm, searchField) {
+            let url = '';
+            let tableName = '';
+            
+            // 根据当前模块构建URL和表名
+            switch (currentModule) {
+                case 'process_architecture':
+                    tableName = 'process_architecture_design';
+                    url = `${supabaseUrl}/rest/v1/process_architecture_design`;
+                    break;
+                case 'process_construction':
+                    tableName = 'process_construction';
+                    url = `${supabaseUrl}/rest/v1/process_construction`;
+                    break;
+                case 'four_level_question':
+                    tableName = 'four_level_question_library';
+                    url = `${supabaseUrl}/rest/v1/four_level_question_library`;
+                    break;
+                default:
+                    return [];
+            }
+            
+            const module = modules[currentModule];
+            let fullUrl = url + '?select=*&is_deleted=eq.false&order=update_time.desc';
+            
+            console.log('请求URL:', fullUrl);
+            
+            try {
+                // 发送请求
+                const response = await fetch(fullUrl, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('请求失败:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, ${errorText}`);
+                }
+                
+                let jsonData = await response.json();
+                
+                // 转换数据格式
+                let results = convertDataToTableFormat(jsonData);
+                
+                // 如果有搜索词，在前端进行过滤搜索
+                if (searchTerm) {
+                    results = filterResults(results, searchTerm, searchField, tableName);
+                }
+                
+                return results;
+            } catch (error) {
+                console.error('获取数据失败:', error);
+                throw error;
+            }
+        }
+        
+        // 前端过滤搜索结果
+        function filterResults(results, searchTerm, searchField, tableName) {
+            if (!searchTerm || results.length === 0) {
+                return results;
+            }
+            
+            const module = modules[currentModule];
+            const searchLower = searchTerm.toLowerCase();
+            
+            return results.filter(row => {
+                if (searchField === '全部字段') {
+                    // 搜索所有字段
+                    return row.some(cell => {
+                        if (cell === null || cell === undefined) return false;
+                        return String(cell).toLowerCase().includes(searchLower);
+                    });
+                } else {
+                    // 搜索指定字段
+                    const dbField = module.fieldMapping[searchField];
+                    if (!dbField) return true;
+                    
+                    // 找到对应字段的索引
+                    const fieldIndex = getFieldIndex(tableName, dbField);
+                    if (fieldIndex >= 0 && fieldIndex < row.length) {
+                        const cellValue = row[fieldIndex];
+                        if (cellValue === null || cellValue === undefined) return false;
+                        return String(cellValue).toLowerCase().includes(searchLower);
+                    }
+                    return false;
+                }
+            });
+        }
+        
+        // 获取字段索引
+        function getFieldIndex(tableName, dbField) {
+            let fieldList;
+            switch (tableName) {
+                case 'process_architecture_design':
+                    fieldList = ['id', 'serial_num', 'arch_design_example', 'example_character', 'arch_advantages', 'advantage_type', 'exist_problem', 'problem_type', 'enlightenment', 'create_time', 'update_time'];
+                    break;
+                case 'process_construction':
+                    fieldList = ['id', 'serial_num', 'process_common_problem', 'problem_detail', 'ideal_model_example', 'create_time', 'update_time'];
+                    break;
+                case 'four_level_question_library':
+                    fieldList = ['id', 'question_category', 'common_question', 'problem_description', 'specific_performance', 'measure_example', 'create_time', 'update_time'];
+                    break;
+                default:
+                    return -1;
+            }
+            return fieldList.indexOf(dbField);
+        }
+        
+        // 存储原始数据
+        let originalData = [];
+        
+        // 转换数据格式为表格格式
+        function convertDataToTableFormat(data) {
+            if (!Array.isArray(data)) {
+                return [];
+            }
+            
+            // 保存原始数据
+            originalData = data;
+            
+            const result = [];
+            
+            data.forEach(item => {
+                switch (currentModule) {
+                    case 'process_architecture':
+                        result.push([
+                            item.id,
+                            item.serial_num,
+                            item.arch_design_example,
+                            item.example_character,
+                            item.arch_advantages,
+                            item.advantage_type,
+                            item.exist_problem,
+                            item.problem_type,
+                            item.enlightenment,
+                            item.create_time,
+                            item.update_time
+                        ]);
+                        break;
+                    case 'process_construction':
+                        result.push([
+                            item.id,
+                            item.serial_num,
+                            item.process_common_problem,
+                            item.problem_detail,
+                            item.ideal_model_example,
+                            item.create_time,
+                            item.update_time
+                        ]);
+                        break;
+                    case 'four_level_question':
+                        result.push([
+                            item.id,
+                            item.question_category,
+                            item.common_question,
+                            item.problem_description,
+                            item.specific_performance,
+                            item.measure_example,
+                            item.create_time,
+                            item.update_time
+                        ]);
+                        break;
+                }
+            });
+            
+            return result;
+        }
+        
+        // 显示结果
+        function displayResults(data) {
+            const tbody = document.querySelector("#results-table tbody");
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr class="no-results">
+                        <td colspan="${modules[currentModule].fields.length}">未找到匹配的结果</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // 清空 tbody
+            tbody.innerHTML = "";
+            
+            // 添加数据行
+            data.forEach((row, index) => {
+                const tr = document.createElement("tr");
+                tr.dataset.index = index;
+                row.forEach(cell => {
+                    const td = document.createElement("td");
+                    td.textContent = cell;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            
+            // 添加点击事件
+            document.querySelectorAll("#results-table tbody tr").forEach(tr => {
+                tr.addEventListener("click", function() {
+                    const index = parseInt(this.dataset.index);
+                    const item = originalData[index];
+                    openViewModal(item);
+                });
+            });
+        }
+        
+        // 打开浏览模态框
+        function openViewModal(item) {
+            const module = modules[currentModule];
+            let contentHTML = '';
+            
+            // 根据模块显示不同的字段
+            switch (currentModule) {
+                case 'process_architecture':
+                    contentHTML = `
+                        <div style="margin-bottom: 15px;"><strong>序号:</strong> ${item.serial_num || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>架构设计示例:</strong> ${item.arch_design_example || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>示例特征:</strong> ${item.example_character || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>架构优势:</strong> ${item.arch_advantages || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>优势类型:</strong> ${item.advantage_type || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>存在问题:</strong> ${item.exist_problem || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>问题类型:</strong> ${item.problem_type || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>启示:</strong> ${item.enlightenment || '无'}</div>
+                    `;
+                    break;
+                case 'process_construction':
+                    contentHTML = `
+                        <div style="margin-bottom: 15px;"><strong>序号:</strong> ${item.serial_num || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>流程常见问题:</strong> ${item.process_common_problem || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>问题详情:</strong> ${item.problem_detail || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>理想模型示例:</strong> ${item.ideal_model_example || '无'}</div>
+                    `;
+                    break;
+                case 'four_level_question':
+                    contentHTML = `
+                        <div style="margin-bottom: 15px;"><strong>问题类别:</strong> ${item.question_category || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>常见问题:</strong> ${item.common_question || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>问题描述:</strong> ${item.problem_description || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>具体表现:</strong> ${item.specific_performance || '无'}</div>
+                        <div style="margin-bottom: 15px;"><strong>措施示例:</strong> ${item.measure_example || '无'}</div>
+                    `;
+                    break;
+            }
+            
+            // 添加时间信息
+            contentHTML += `
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #ddd;">
+                    <div style="margin-bottom: 10px;"><strong>创建时间:</strong> ${item.create_time ? new Date(item.create_time).toLocaleString() : '无'}</div>
+                    <div style="margin-bottom: 10px;"><strong>更新时间:</strong> ${item.update_time ? new Date(item.update_time).toLocaleString() : '无'}</div>
+                </div>
+            `;
+            
+            document.getElementById('view-content').innerHTML = contentHTML;
+            document.getElementById('view-modal').style.display = 'block';
+        }
+        
+        // 关闭浏览模态框
+        function closeViewModal() {
+            document.getElementById('view-modal').style.display = 'none';
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('view-modal');
+            if (event.target === modal) {
+                closeViewModal();
+            }
+        }
+        
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
